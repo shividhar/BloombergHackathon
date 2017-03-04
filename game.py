@@ -2,6 +2,7 @@ import socket
 import sys
 import time
 import math
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 class Player:
     def __init__(self):
@@ -13,7 +14,7 @@ class Player:
         self.speedY = status[4]
         self.minesOwned = []
     def update(self):
-        status = run("a", "a")
+        status = run("4geese", "gee4se")
         self.x = status[1]
         self.y = status[2]
         self.speedX = status[3]
@@ -54,57 +55,76 @@ class Bombs:
             currentIndex += 2
 
 
-def run(*commands):
-    HOST, PORT = "localhost", 17429
-    #HOST, PORT = "localhost", 17429
+def run(commands):
 
-    data= "a a \n" + "\n".join(commands) + "\nCLOSE_CONNECTION\n"
+    #data= "4geese gee4se \n" + "\n".join(commands) + "\nCLOSE_CONNECTION\n"
+    data = commands + "\n"
+    # HOST, PORT = "localhost", 17429
+    # data= "a a \n" + "\n".join(commands) + "\nCLOSE_CONNECTION\n"
     rline = ""
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        sock.connect((HOST, PORT))
+        #sock.connect((HOST, PORT))
         sock.sendall(data)
         sfile = sock.makefile()
         rline = sfile.readline()
-        while rline:
-            print(rline.strip())
-          #  rline = sfile.readline()
+        #while rline:
+            #print(rline.strip())
+            #rline = sfile.readline()
     finally:
-        sock.close()
+        print("Request complete")
+        #print(rline)
+        #sock.close()
+
     return rline
+
+HOST, PORT = "codebb.cloudapp.net", 17429
+sock.connect((HOST, PORT))
+sock.sendall("4geese gee4se \n")
+
 
 player1 = Player()
 #player1.accelerate(-1.57, 1)
-#run("BRAKE")
-player1.accelerate(0, 0.3)
+player1.brake()
+#player1.accelerate(0, 0.3)
 #print("stop")
-x, y = player1.x, player1.y
+x = player1.x
+y = player1.y
 n=0
 d = 1
+hz = True;
 a = [-math.pi/2, math.pi, math.pi/2, 0]
 while True:
     player1 = Player()
-    print("blah", player1.x, x)
-    if math.fabs(float(player1.x) - float(x) - 300*d) < 50:
-        #print("STOP")
+    #print("blah", float(player1.x), float(x)+300)
+    if hz and math.fabs(float(player1.x) - float(x) - 300*d) < 100:
+        print("STOPX")
         x = player1.x
         y = player1.y
         if n%2 == 0:
             d *= 2;
         run("BRAKE")
         player1.accelerate(a[n%4], 0.3)
+        hz = False
         n+=1
+        print(n, hz, x, y)
 
-    if math.fabs(float(player1.y) - float(y) - 300*d) < 50:
-        #print("STOP")
+    if not(hz) and math.fabs( - float(player1.y) + float(y) - 300*d) < 100:
+        print("STOPY")
         x = player1.x
         y = player1.y
         if n%2 == 0:
             d *= 2;
         run("BRAKE")
         player1.accelerate(a[n%4], 0.3)
+        hz = True
         n+=1
 
 print(player1.x, player1.y)
 #print(player1.speedY)
+
+try:
+	sock.sendall("CLOSE_CONNECTION\n")
+finally:
+	sock.close()
