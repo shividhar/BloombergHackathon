@@ -142,7 +142,7 @@ def run(commands):
 
 def getMineOwner(mx, my, player1):
 
-    for i in range(0, len(player1.mines)):
+    for i in range(0, len(player1.scanMines)):
         if (mx == player1.scanMines[i][1] and my == player1.scanMines[i][2]):
             return player1.scanMines[i][0]
     return ""
@@ -151,9 +151,11 @@ def takeMine(mx, my):
     player1 = Player()
     player1.brake()
     while True:
-        angle = math.atan2(my - player1.y, mx - player2.x)
-        player1.accelerate(0.1, -angle)
-        if getMineOwner(mx, my) == "4geese":
+        angle = math.atan2(my - float(player1.y), mx - float(player1.x))
+        print("ACCELERATE MOTHERFUCKER", angle)
+        player1.accelerate(angle, 0.8)
+        if getMineOwner(mx, my, player1) == "4geese":
+            print(" WTFEBVDJBVJDH ACCELERATE MOTHERFUCKER")
             return [mx, my]
 
     return [-1, -1]
