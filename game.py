@@ -21,10 +21,9 @@ class Player:
         self.y = float(status[2])
         self.speedX = float(status[3])
         self.speedY = float(status[4])
-        self.prevBombDropTime = time.time()
-        self.minesOwned = []
         self.statusMines = []
         self.scanMines = []
+        self.startTime = time.time()
 
         mineIndex = len(status) - status[::-1].index("MINES") - 1
 
@@ -66,28 +65,54 @@ class Player:
             mineFoundStatus = True
             currentIndex += 3
         return mineFoundStatus
-    def updateScanMines(self, x, y):
-        scan = run("SCAN " + str(x) + " " + str(y))
+    # def updateScanMines(self, x, y):
+    #     scan = run("SCAN " + str(x) + " " + str(y))
+    #     if scan != "ERROR Scanning too soon":
+    #         scan = scan.split(" ")
+
+    #         mineIndex = len(scan) - scan[::-1].index("MINES") - 1
+
+    #         currentIndex = mineIndex+2
+
+    #         mineFoundStatus = False
+    #         for i in range(0,int(scan[mineIndex+1])):
+    #             try:
+    #                 mineFoundIndex = self.scanMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
+    #                 self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
+    #                 del self.scanMines[mineFoundIndex]
+    #             except ValueError:
+    #                 self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
+    #             mineFoundStatus = True
+    #             currentIndex += 3
+    #         return mineFoundStatus
+    #     else:
+    #         print("SCANNING TOO SOON")
+    def scanMineLocation(self, x, y):
+        scan = run("SCAN " + x + " " + y + " " + index)
         if scan != "ERROR Scanning too soon":
             scan = scan.split(" ")
 
             mineIndex = len(scan) - scan[::-1].index("MINES") - 1
 
             currentIndex = mineIndex+2
-
-            mineFoundStatus = False
             for i in range(0,int(scan[mineIndex+1])):
                 try:
-                    mineFoundIndex = self.scanMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
-                    self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
-                    del self.scanMines[mineFoundIndex]
+                    scanX = float(status[currentIndex+1])
+                    scanY = float(status[currentIndex+2])
+
+                    statusMineIndex = self.statusMines.index([scan[currentIndex], scanX, scanY])
+                    scanMineLocation = self.scanMines.index([scan[currentIndex], scanX, scanY])
+                    if self.statusMines[mineIndex][0] != "4geese":
+                        self.scanMines.append([scan[currentIndex], scanX, scanY, math.sqrt((self.x-scanX)**2) + (self.y-scanY)**2])
+                    elif self.scanMines[scanMineLocation][0] == "4geese":
+                        del self.scanMines[scanMineLocation]
                 except ValueError:
-                    self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
-                mineFoundStatus = True
-                currentIndex += 3
-            return mineFoundStatus
+
+            sorted(self.scanMines,key=lambda x: (x[3]))
+            return True
         else:
-            print("SCANNING TOO SOON")
+            return False
+
 class Bombs:
     def __init__(self):
         self.bombs = []
@@ -167,6 +192,9 @@ def takeMine(mx, my):
             return [mx, my]
     return [-1, -1]
 
+def scanVisitedMines(playerObject):
+
+
 
 
 player1 = Player()
@@ -182,7 +210,9 @@ hzl = False
 vu = False
 vd = False
 a = [-math.pi/2, math.pi, math.pi/2, 0]
-config()
+
+statusListIndex = 0
+
 while True:
     player1 = Player()
     #print("blah", float(player1.x), float(x)+300)
@@ -260,13 +290,21 @@ while True:
         y = player1.y
 
     if vd and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
-        player1.dropBomb(float(player1.x), float(player1.y) - 4, 20)
+        player1.dropBomb(float(player1.x), float(player1.y) - 4, 25)
     if vu and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
-        player1.dropBomb(float(player1.x), float(player1.y) + 4, 20)
+        player1.dropBomb(float(player1.x), float(player1.y) + 4, 25)
     if hzl and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
-        player1.dropBomb(float(player1.x) + 4, float(player1.y), 20)
+        player1.dropBomb(float(player1.x) + 4, float(player1.y), 25)
     if hzr and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
-        player1.dropBomb(float(player1.x) - 4, float(player1.y), 20)
+        player1.dropBomb(float(player1.x) - 4, float(player1.y), 25)
+
+    if statusListIndex < len(player1.statusMines) and len(player1.statusMines) > 6:
+        scanStatus = player1.scanMineLocation(player1.statusMines[statusListIndex])
+        if scanStatus == True:
+            statusListIndex += 1
+    else:
+        statusListIndex = 0
+
 
 try:
 	sock.sendall("CLOSE_CONNECTION\n")
