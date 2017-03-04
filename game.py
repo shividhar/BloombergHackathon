@@ -23,37 +23,80 @@ class Player:
         run("ACCELERATE " + str(angle) + " " + str(magnitude))
     def brake(self):
         run("BRAKE")
-    def addMine(self, x, y):
-        self.minesOwned.append([x, y])
+    def dropBomb(x, y, t):
+        run("BOMB " + str(x) + " " + str(y) + " " + str(t))
+    def addMine(self, owner, x, y):
+        self.minesOwned.append([owner, float(x), float(y)])
 
 class Mines:
     def __init__(self):
-        self.mines = []
-    def addMine(self, x,y):
-        self.mines.append([x, y])
+        self.statusMines = []
+        self.scanMines = []
+
+        status = run("STATUS")
+        status = status.split(" ")
+
+        mineIndex = len(status) - status[::-1].index("MINES") - 1
+
+        currentIndex = mineIndex+2
+
+        for i in range(0,int(status[mineIndex+1])):
+            self.statusMines.append([status[currentIndex+1], status[currentIndex+2]])
+            currentIndex += 3
+    def updateStatusMines(self):
+    	# status = ["A", "B", "MINES", "3", "0", "0", "0", "1", "1", "1", "2", "2", "2"]
+        status = run("STATUS")
+        status = status.split(" ")
+    	mineIndex = len(status) - status[::-1].index("MINES") - 1
+
+        currentIndex = mineIndex+2
+        mineFound = False
+        for i in range(0,int(status[mineIndex+1])):
+            self.statusMines.append([float(status[currentIndex+1]),float(status[currentIndex+2])])
+            currentIndex += 3
+            mineFound = True
+        return mineFound
+    def updateScanMines(self, x, y):
+	    scan = run("SCAN " + str(x) + " " + str(y))
+	    if scan != "ERROR Scanning too soon":
+	    	scan = scan.split(" ")
+
+	    	mineIndex = len(scan) - scan[::-1].index("MINES") - 1
+
+	    	currentIndex = mineIndex+2
+            mineFound = False
+	    	for i in range(0,int(scan[mineIndex+1])):
+	            self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
+	            currentIndex += 3
+                mineFound = True
+            return mineFound
+	    else:
+	    	print("SCANNING TOO SOON")
+
 class Bombs:
     def __init__(self):
         self.bombs = []
         status = run("STATUS")
         status = status.split(" ")
 
-        bombsIndex = len(status) - status[::-1].index("BOMBS") - 1
+        bombIndex = len(status) - status[::-1].index("BOMBS") - 1
 
-        currentIndex = bombsIndex+1
-        for i in range(0,status[bombsIndex+1]):
-            self.bombs([currentIndex, currentIndex+1])
+        currentIndex = bombIndex+2
+
+        for i in range(0,int(status[bombIndex+1])):
+            self.bombs.append([float(status[currentIndex]),float(status[currentIndex+1])])
             currentIndex += 2
     def update(self):
         status = run("STATUS")
         status = status.split(" ")
 
-        bombsIndex = len(status) - status[::-1].index("BOMBS") - 1
+        bombIndex = len(status) - status[::-1].index("BOMBS") - 1
 
         currentIndex = bombsIndex+1
-        for i in range(0,status[bombsIndex+1]):
-            self.bombs([currentIndex, currentIndex+1])
-            currentIndex += 2
 
+        for i in range(0,int(status[bombIndex+1])):
+            self.bombs.append([float(status[currentIndex]),float(status[currentIndex+1])])
+            currentIndex += 2
 
 def run(commands):
 
@@ -79,6 +122,24 @@ def run(commands):
 
     return rline
 
+
+def getMineOwner(mx, my, player1):
+
+    for i in range(0, len(player1.mines)):
+        if mx == player1.mines[i][1] and my == player1.mines[i][2]
+            return player1.mines[i][0]
+    return ""
+def takeMine(mx, my):
+    player1 = new Player()
+    player1.brake()
+    while True:
+        angle = math.atan2(my - player1.y, mx - player2.x)
+        player1.accelerate(0.1, -angle)
+        if getMineOwner(mx, my) == "4geese":
+            return [mx, my]
+
+    return [-1, -1]
+
 HOST, PORT = "codebb.cloudapp.net", 17429
 sock.connect((HOST, PORT))
 sock.sendall("4geese gee4se \n")
@@ -86,39 +147,68 @@ sock.sendall("4geese gee4se \n")
 
 player1 = Player()
 #player1.accelerate(-1.57, 1)
-player1.brake()
-#player1.accelerate(0, 0.3)
+player1.accelerate(0, 0.8)
 #print("stop")
 x = player1.x
 y = player1.y
 n=0
 d = 1
-hz = True;
+hzr = True
+hzl = False
+vu = False
+vd = False
 a = [-math.pi/2, math.pi, math.pi/2, 0]
 while True:
     player1 = Player()
     #print("blah", float(player1.x), float(x)+300)
-    if hz and math.fabs(float(player1.x) - float(x) - 300*d) < 100:
-        print("STOPX")
+    if hzr and math.fabs(float(player1.x) - float(x) - 300*d) < 100:
+        print("STOPXR")
         x = player1.x
         y = player1.y
         if n%2 == 0:
             d *= 2;
         run("BRAKE")
-        player1.accelerate(a[n%4], 0.3)
-        hz = False
+        player1.accelerate(a[n%4], 0.8)
+        hzr = False
+        vu = True
         n+=1
-        print(n, hz, x, y)
+        #print(n, hz, x, y)
 
-    if not(hz) and math.fabs( - float(player1.y) + float(y) - 300*d) < 100:
+    if vu and math.fabs( - float(player1.y) + float(y) - 300*d) < 100:
         print("STOPY")
         x = player1.x
         y = player1.y
         if n%2 == 0:
             d *= 2;
         run("BRAKE")
-        player1.accelerate(a[n%4], 0.3)
-        hz = True
+        player1.accelerate(a[n%4], 0.8)
+        vu = False
+        hzl = True
+        n+=1
+
+    if hzl and math.fabs(-float(player1.x) + float(x) - 300*d) < 100:
+        print("STOPX")
+        x = player1.x
+        y = player1.y
+        if n%2 == 0:
+            d *= 2;
+        run("BRAKE")
+        player1.accelerate(a[n%4], 0.8)
+        hzl = False
+        vd = True
+        n+=1
+        #print(n, hz, x, y)
+
+    if vd and math.fabs( float(player1.y) - float(y) - 300*d) < 100:
+        print("STOPY")
+        x = player1.x
+        y = player1.y
+        if n%2 == 0:
+            d *= 2;
+        run("BRAKE")
+        player1.accelerate(a[n%4], 0.8)
+        vd = False
+        hzr = True
         n+=1
 
 print(player1.x, player1.y)
