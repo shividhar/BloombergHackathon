@@ -36,8 +36,8 @@ class Player:
         run("BRAKE")
     def dropBomb(x, y, t):
         run("BOMB " + str(x) + " " + str(y) + " " + str(t))       
-    def addMine(self, x, y):
-        self.minesOwned.append([x, y])
+    def addMine(self, owner, x, y):
+        self.minesOwned.append([owner, float(x), float(y)])
 
 class Mines:
     def __init__(self):
@@ -75,7 +75,7 @@ class Mines:
 	    	currentIndex = mineIndex+2
 
 	    	for i in range(0,int(scan[mineIndex+1])):
-	            self.scanMines.append([float(scan[currentIndex+1]),float(scan[currentIndex+2])])
+	            self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
 	            currentIndex += 3
 	    else:
 	    	print("SCANNING TOO SOON")
