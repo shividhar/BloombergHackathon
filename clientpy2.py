@@ -23,6 +23,15 @@ class Player:
         self.speedY = float(status[4])
         self.prevBombDropTime = time.time()
         self.minesOwned = []
+        self.statusMines = []
+        self.scanMines = []
+
+        mineIndex = len(status) - status[::-1].index("MINES") - 1        
+        
+        currentIndex = mineIndex+2
+        for i in range(0,int(status[mineIndex+1])):
+            self.statusMines.append([status[currentIndex+1], status[currentIndex+2]])
+            currentIndex += 3
     def update(self):
         status = run("STATUS")
         status = status.split(" ")
@@ -38,52 +47,47 @@ class Player:
         run("BOMB " + str(x) + " " + str(y) + " " + str(t))       
     def addMine(self, owner, x, y):
         self.minesOwned.append([owner, float(x), float(y)])
-
-class Mines:
-    def __init__(self):
-        self.statusMines = []
-        self.scanMines = []
-
-        status = run("STATUS")
-        status = status.split(" ")
-
-        mineIndex = len(status) - status[::-1].index("MINES") - 1        
-        
-        currentIndex = mineIndex+2
-
-        for i in range(0,int(status[mineIndex+1])):
-            self.statusMines.append([status[currentIndex+1], status[currentIndex+2]])
-            currentIndex += 3
     def updateStatusMines(self):
-    	# status = ["A", "B", "MINES", "3", "0", "0", "0", "1", "1", "1", "2", "2", "2"]
+        # status = ["A", "B", "MINES", "3", "0", "0", "0", "1", "1", "1", "2", "2", "2"]
         status = run("STATUS")
         status = status.split(" ")
-    	mineIndex = len(status) - status[::-1].index("MINES") - 1
+        mineIndex = len(status) - status[::-1].index("MINES") - 1
 
         currentIndex = mineIndex+2
-        mineFound = False
+
+        mineFoundStatus = False
         for i in range(0,int(status[mineIndex+1])):
-            self.statusMines.append([float(status[currentIndex+1]),float(status[currentIndex+2])])
+            try:
+                mineFoundIndex = statusMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
+                self.statusMines.append(statusMines[mineFoundIndex])
+                del statusMines[mineFoundIndex]
+            except ValueError:
+                self.statusMines.append([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
+            mineFoundStatus = True
             currentIndex += 3
-            mineFound = True
-        return mineFound
+        return mineFoundStatus
     def updateScanMines(self, x, y):
-	    scan = run("SCAN " + str(x) + " " + str(y))
-	    if scan != "ERROR Scanning too soon":
-	    	scan = scan.split(" ")
+        scan = run("SCAN " + str(x) + " " + str(y))
+        if scan != "ERROR Scanning too soon":
+            scan = scan.split(" ")
 
-	    	mineIndex = len(scan) - scan[::-1].index("MINES") - 1
+            mineIndex = len(scan) - scan[::-1].index("MINES") - 1
 
-	    	currentIndex = mineIndex+2
-            mineFound = False
-	    	for i in range(0,int(scan[mineIndex+1])):
-	            self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
-	            currentIndex += 3
-                mineFound = True
-            return mineFound
-	    else:
-	    	print("SCANNING TOO SOON")
-    
+            currentIndex = mineIndex+2
+
+            mineFoundStatus = False
+            for i in range(0,int(scan[mineIndex+1])):
+                try:
+                    mineFoundIndex = statusMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
+                    self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
+                    del scanMines[mineFoundIndex]
+                except ValueError:
+                    self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
+                mineFoundStatus = True
+                currentIndex += 3
+            return mineFoundStatus
+        else:
+            print("SCANNING TOO SOON")
 class Bombs:
     def __init__(self):
         self.bombs = []
@@ -111,7 +115,6 @@ class Bombs:
 
     
 def run(commands):
-
     #data= "4geese gee4se \n" + "\n".join(commands) + "\nCLOSE_CONNECTION\n"
     data = commands + "\n"
     # HOST, PORT = "localhost", 17429
