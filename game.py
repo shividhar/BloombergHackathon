@@ -43,7 +43,7 @@ class Player:
         run("ACCELERATE " + str(angle) + " " + str(magnitude))
     def brake(self):
         run("BRAKE")
-    def dropBomb(x, y, t):
+    def dropBomb(self, x, y, t):
         run("BOMB " + str(x) + " " + str(y) + " " + str(t))
     def addMine(self, owner, x, y):
         self.minesOwned.append([owner, float(x), float(y)])
@@ -59,7 +59,7 @@ class Player:
         for i in range(0,int(status[mineIndex+1])):
             try:
                 mineFoundIndex = self.statusMines.index([status[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
-                self.statusMines.append(statusMines[mineFoundIndex])
+                self.statusMines.append(self.statusMines[mineFoundIndex])
                 del self.statusMines[mineFoundIndex]
             except ValueError:
                 self.statusMines.append([status[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
@@ -141,23 +141,30 @@ def run(commands):
 
 
 def getMineOwner(mx, my, player1):
-
-    for i in range(0, len(player1.scanMines)):
-        if (mx == player1.scanMines[i][1] and my == player1.scanMines[i][2]):
-            return player1.scanMines[i][0]
+    player1.updateStatusMines()
+    print(mx, my, player1.statusMines)
+    for i in range(0, len(player1.statusMines)):
+        if (mx == player1.statusMines[i][1] and my == player1.statusMines[i][2]):
+            return player1.statusMines[i][0]
     return ""
 
 def takeMine(mx, my):
     player1 = Player()
     player1.brake()
     while True:
-        angle = math.atan2(my - float(player1.y), mx - float(player1.x))
-        print("ACCELERATE MOTHERFUCKER", angle)
-        player1.accelerate(angle, 0.8)
-        if getMineOwner(mx, my, player1) == "4geese":
-            print(" WTFEBVDJBVJDH ACCELERATE MOTHERFUCKER")
-            return [mx, my]
+        player1.update()
+        if(math.fabs(float(player1.speedX)) < 0.5 and math.fabs(float(player1.speedY)) < 0.5):
+            break
 
+    while True:
+        angle = math.atan2(my - float(player1.y), mx - float(player1.x))
+        #print(getMineOwner(mx, my, player1))
+        player1.accelerate(angle, 0.8)
+        if player1.updateStatusMines():
+            break
+        if str(getMineOwner(mx, my, player1)) == "4geese":
+            print("WTFEBVDJBVJDH ACCELERATE MOTHERFUCKER")
+            return [mx, my]
     return [-1, -1]
 
 
@@ -175,13 +182,16 @@ hzl = False
 vu = False
 vd = False
 a = [-math.pi/2, math.pi, math.pi/2, 0]
+config()
 while True:
     player1 = Player()
     #print("blah", float(player1.x), float(x)+300)
 
     if player1.updateStatusMines():
         print("IM FUCKING CLOSE")
-        takeMine(player1.statusMines[-1][1], player1.statusMines[-1][2])
+        if str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) != "4geese":
+            print("it's not our")
+            takeMine(player1.statusMines[-1][1], player1.statusMines[-1][2])
 
     if hzr and math.fabs(float(player1.x) - float(x) - 300*d) < 100:
         print("STOPXR")
@@ -233,8 +243,30 @@ while True:
         hzr = True
         n+=1
 
-print(player1.x, player1.y)
-#print(player1.speedY)
+    if hzr and float(player1.x) < float(x):
+        x = player1.x
+        y = player1.y
+
+    if hzl and float(player1.x) > float(x):
+        x = player1.x
+        y = player1.y
+
+    if vu and float(player1.y) > float(y):
+        x = player1.x
+        y = player1.y
+
+    if vd and float(player1.y) < float(y):
+        x = player1.x
+        y = player1.y
+
+    if vd and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
+        player1.dropBomb(float(player1.x), float(player1.y) - 4, 100)
+    if vu and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
+        player1.dropBomb(float(player1.x), float(player1.y) + 4, 100)
+    if hzl and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
+        player1.dropBomb(float(player1.x) + 4, float(player1.y), 100)
+    if hzr and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
+        player1.dropBomb(float(player1.x) - 4, float(player1.y), 100)
 
 try:
 	sock.sendall("CLOSE_CONNECTION\n")
