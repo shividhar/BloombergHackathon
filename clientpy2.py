@@ -61,10 +61,12 @@ class Mines:
     	mineIndex = len(status) - status[::-1].index("MINES") - 1
 
         currentIndex = mineIndex+2
-
+        mineFound = False
         for i in range(0,int(status[mineIndex+1])):
             self.statusMines.append([float(status[currentIndex+1]),float(status[currentIndex+2])])
             currentIndex += 3
+            mineFound = True
+        return mineFound
     def updateScanMines(self, x, y):
 	    scan = run("SCAN " + str(x) + " " + str(y))
 	    if scan != "ERROR Scanning too soon":
@@ -73,10 +75,12 @@ class Mines:
 	    	mineIndex = len(scan) - scan[::-1].index("MINES") - 1
 
 	    	currentIndex = mineIndex+2
-
+            mineFound = False
 	    	for i in range(0,int(scan[mineIndex+1])):
 	            self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
 	            currentIndex += 3
+                mineFound = True
+            return mineFound
 	    else:
 	    	print("SCANNING TOO SOON")
     
