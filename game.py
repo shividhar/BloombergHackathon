@@ -260,13 +260,13 @@ while True:
         y = player1.y
 
     if vd and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
-        player1.dropBomb(float(player1.x), float(player1.y) - 4, 100)
+        player1.dropBomb(float(player1.x), float(player1.y) - 4, 20)
     if vu and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
-        player1.dropBomb(float(player1.x), float(player1.y) + 4, 100)
+        player1.dropBomb(float(player1.x), float(player1.y) + 4, 20)
     if hzl and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
-        player1.dropBomb(float(player1.x) + 4, float(player1.y), 100)
+        player1.dropBomb(float(player1.x) + 4, float(player1.y), 20)
     if hzr and (not player1.updateStatusMines() or (player1.updateStatusMines() and str(getMineOwner(player1.statusMines[-1][1], player1.statusMines[-1][2], player1)) == "4geese")):
-        player1.dropBomb(float(player1.x) - 4, float(player1.y), 100)
+        player1.dropBomb(float(player1.x) - 4, float(player1.y), 20)
 
 try:
 	sock.sendall("CLOSE_CONNECTION\n")
