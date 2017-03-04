@@ -167,7 +167,7 @@ while True:
         y = player1.y
         if n%2 == 0:
             d *= 2;
-        run("BRAKE")
+        player1.brake()
         player1.accelerate(a[n%4], 0.8)
         hzr = False
         vu = True
@@ -180,7 +180,7 @@ while True:
         y = player1.y
         if n%2 == 0:
             d *= 2;
-        run("BRAKE")
+        player1.brake()
         player1.accelerate(a[n%4], 0.8)
         vu = False
         hzl = True
@@ -192,7 +192,7 @@ while True:
         y = player1.y
         if n%2 == 0:
             d *= 2;
-        run("BRAKE")
+        player1.brake()
         player1.accelerate(a[n%4], 0.8)
         hzl = False
         vd = True
@@ -205,7 +205,7 @@ while True:
         y = player1.y
         if n%2 == 0:
             d *= 2;
-        run("BRAKE")
+        player1.brake()
         player1.accelerate(a[n%4], 0.8)
         vd = False
         hzr = True

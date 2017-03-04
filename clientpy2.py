@@ -21,7 +21,6 @@ class Player:
         self.y = float(status[2])
         self.speedX = float(status[3])
         self.speedY = float(status[4])
-        self.prevBombDropTime = time.time()
         self.minesOwned = []
         self.statusMines = []
         self.scanMines = []
@@ -58,9 +57,9 @@ class Player:
         mineFoundStatus = False
         for i in range(0,int(status[mineIndex+1])):
             try:
-                mineFoundIndex = statusMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
-                self.statusMines.append(statusMines[mineFoundIndex])
-                del statusMines[mineFoundIndex]
+                mineFoundIndex = self.statusMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
+                self.statusMines.append(self.statusMines[mineFoundIndex])
+                del self.statusMines[mineFoundIndex]
             except ValueError:
                 self.statusMines.append([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
             mineFoundStatus = True
@@ -78,9 +77,9 @@ class Player:
             mineFoundStatus = False
             for i in range(0,int(scan[mineIndex+1])):
                 try:
-                    mineFoundIndex = statusMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
+                    mineFoundIndex = self.scanMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
                     self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
-                    del scanMines[mineFoundIndex]
+                    del self.scanMines[mineFoundIndex]
                 except ValueError:
                     self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
                 mineFoundStatus = True
