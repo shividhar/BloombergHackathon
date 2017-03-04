@@ -4,6 +4,11 @@ import time
 import math
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+HOST, PORT = "codebb.cloudapp.net", 17429
+sock.connect((HOST, PORT))
+
+sock.sendall("4geese gee4se \n")
+
 def config():
     print(run("CONFIGURATIONS"))
 
@@ -29,13 +34,8 @@ class Player:
         run("ACCELERATE " + str(angle) + " " + str(magnitude))
     def brake(self):
         run("BRAKE")
-    def dropBomb(x, y):
-        timeDifference = (time.time() - self.prevBombDropTime) * 1000
-        if(timeDifference >= 1):
-            run("BOMB " + str(x) + " " + str(y))
-            self.prevBombDropTime = time.time()
-        else:
-            print("DROPPING BOMB TOO SOON")         
+    def dropBomb(x, y, t):
+        run("BOMB " + str(x) + " " + str(y) + " " + str(t))       
     def addMine(self, x, y):
         self.minesOwned.append([x, y])
 
@@ -106,33 +106,29 @@ class Bombs:
             currentIndex += 2
 
     
-def run(*commands):
-    
+def run(commands):
+
     #data= "4geese gee4se \n" + "\n".join(commands) + "\nCLOSE_CONNECTION\n"
-    data= "4geese gee4se \n" + "\n".join(commands) + "\n"
+    data = commands + "\n"
     # HOST, PORT = "localhost", 17429
     # data= "a a \n" + "\n".join(commands) + "\nCLOSE_CONNECTION\n"
     rline = ""
     try:
-#        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        #sock.connect((HOST, PORT))
         sock.sendall(data)
         sfile = sock.makefile()
         rline = sfile.readline()
-        #while rline:
-         #   print(rline.strip())
-          #  rline = sfile.readline()
+        # while rline:
+        #    print(rline.strip())
+        #    rline = sfile.readline()
     finally:
         print("Request complete")
-        #sock.close()
     return rline
 
-HOST, PORT = "codebb.cloudapp.net", 17429
-sock.connect((HOST, PORT))
 player1 = Player()
+print(run("BOMB " + str(player1.x) + " " + str(player1.y)))
+print(run("BOMB " + str(player1.x) + " " + str(player1.y)))
 
 try:
-	sock.sendall("CLOSE_CONNECTION\n")
+    sock.sendall("CLOSE_CONNECTION\n")
 finally:
-	sock.close()
+    sock.close()
