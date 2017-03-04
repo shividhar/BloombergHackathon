@@ -61,12 +61,18 @@ class Mines:
     	mineIndex = len(status) - status[::-1].index("MINES") - 1
 
         currentIndex = mineIndex+2
-        mineFound = False
+
+        mineFoundStatus = False
         for i in range(0,int(status[mineIndex+1])):
-            self.statusMines.append([float(status[currentIndex+1]),float(status[currentIndex+2])])
+            try:
+                mineFoundIndex = statusMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
+                self.statusMines.append(statusMines[mineFoundIndex])
+                del statusMines[mineFoundIndex]
+            except ValueError:
+                self.statusMines.append([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
+            mineFoundStatus = True
             currentIndex += 3
-            mineFound = True
-        return mineFound
+        return mineFoundStatus
     def updateScanMines(self, x, y):
 	    scan = run("SCAN " + str(x) + " " + str(y))
 	    if scan != "ERROR Scanning too soon":
@@ -75,12 +81,18 @@ class Mines:
 	    	mineIndex = len(scan) - scan[::-1].index("MINES") - 1
 
 	    	currentIndex = mineIndex+2
-            mineFound = False
+
+            mineFoundStatus = False
 	    	for i in range(0,int(scan[mineIndex+1])):
-	            self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
-	            currentIndex += 3
-                mineFound = True
-            return mineFound
+                try:
+                    mineFoundIndex = statusMines.index([scan[currentIndex], float(status[currentIndex+1]),float(status[currentIndex+2])])
+                    self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
+                    del statusMines[mineFoundIndex]
+                except ValueError:
+                    self.scanMines.append([scan[currentIndex], float(scan[currentIndex+1]),float(scan[currentIndex+2])])
+                mineFoundStatus = True
+                currentIndex += 3
+            return mineFoundStatus
 	    else:
 	    	print("SCANNING TOO SOON")
     
